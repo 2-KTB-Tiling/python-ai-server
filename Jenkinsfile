@@ -71,7 +71,7 @@ pipeline {
                         sh """
                         git clone https://github.com/2-KTB-Tiling/k8s-manifests.git
                         cd k8s-manifests
-                        sed -i 's|image: luckyprice1103/tiling-ai-server::.*|image: luckyprice1103/tiling-ai-server:${NEW_TAG}|' ai-deployment.yaml
+                        sed -i 's|image: luckyprice1103/tiling-ai-server:.*|image: luckyprice1103/tiling-ai-server:${NEW_TAG}|' ai-deployment.yaml
                         git config --global user.email "luckyprice1103@naver.com"
                         git config --global user.name "luckyPrice"
                         git add ai-deployment.yaml  
