@@ -41,7 +41,7 @@ def convert_til(request: ConvertRequest, authorization: str = Header(...)):
         raise e  # FastAPI에서 예외를 올바르게 처리하도록 변경
 
     except Exception as e:
-        print(f"🔥 [ERROR] {e}")  # 서버 로그 확인용
+        print(f"[ERROR] {e}")  # 서버 로그 확인용
         raise HTTPException(status_code=500, detail={"message": "llm_server_error", "data": None})  # ✅ `raise`로 변경
 
 
