@@ -53,7 +53,7 @@ pipeline {
         
         stage('Build & Push backend Image') {
             steps {
-                withCredentials([file(credentialsId: 'ai-key', variable: 'SECRET_ENV')]) {
+                withCredentials([file(credentialsId: 'openai-key', variable: 'SECRET_ENV')]) {
                     script {
                         sh """
                         cp $SECRET_ENV .env
