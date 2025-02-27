@@ -51,8 +51,9 @@ pipeline {
             }
         }
         
-        stage('Build & Push Ai Image') {
-            withCredentials([file(credentialsId: 'ai-key', variable: 'SECRET_ENV')]) {
+        stage('Build & Push backend Image') {
+            steps {
+                withCredentials([file(credentialsId: 'ai-key', variable: 'SECRET_ENV')]) {
                     script {
                         sh """
                         cp $SECRET_ENV .env
@@ -61,6 +62,7 @@ pipeline {
                         """
                     }
                 }
+            }
         }
 
         stage('Update GitHub Deployment YAML') {
