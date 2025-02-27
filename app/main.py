@@ -21,17 +21,9 @@ class ConvertRequest(BaseModel):
 
 # LLM을 이용한 Markdown 변환 API
 @app.post("/api/v1/summation")
-async def convert_til(request: ConvertRequest, authorization: str = Header(...)):
+async def convert_til(request: ConvertRequest):
     """ 사용자가 작성한 TIL을 Markdown으로 변환하는 API """
     try:
-        # 인증 헤더 검증
-        if not authorization.startswith("Bearer "):
-            raise HTTPException(status_code=400, detail={"message": "invalid_request", "data": None})
-
-        # 환경 변수 확인
-        if not OPENAI_API_KEY:
-            raise HTTPException(status_code=500, detail={"message": "missing_openai_key", "data": None})
-
         # LLM을 이용하여 Markdown 변환
         markdown_text = await generate_til(request.content)
 
@@ -39,6 +31,7 @@ async def convert_til(request: ConvertRequest, authorization: str = Header(...))
 
     except HTTPException as e:
         raise e  
+
 
     except Exception as e:
         print(f"[ERROR] {e}")
