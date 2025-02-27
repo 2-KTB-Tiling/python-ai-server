@@ -20,7 +20,7 @@ class ConvertRequest(BaseModel):
     image: Optional[str] = Field(None, title="이미지", description="64인코딩된 이미지 (선택 사항)")
 
 # LLM을 이용한 Markdown 변환 API
-@app.post("/api/v1/convert")
+@app.post("/api/v1/summation")
 async def convert_til(request: ConvertRequest, authorization: str = Header(...)):
     """ 사용자가 작성한 TIL을 Markdown으로 변환하는 API """
     try:
