@@ -18,7 +18,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
 COPY . /app
 
 # 6. 환경 변수 설정 (Jenkins에서 전달받음)
-ENV PYTHONUNBUFFERED=1
+# ENV PYTHONUNBUFFERED=1
 
 # 7. FastAPI 실행 (환경 변수를 사용하여 실행)
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
