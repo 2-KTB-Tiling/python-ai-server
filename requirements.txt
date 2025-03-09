@@ -56,7 +56,6 @@ tqdm==4.67.1
 typing_extensions==4.12.2
 urllib3==2.3.0
 uvicorn==0.34.0
-vboxapi==1.0
 wheel==0.37.0
 yarl==1.18.3
 zstandard==0.23.0
