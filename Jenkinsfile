@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         DOCKER_HUB_REPO = "luckyprice1103/tiling-ai-server"
+        DEPLOY_SERVER = "ec2-3-36-132-43.ap-northeast-2.compute.amazonaws.com"
     }
 
     stages {
@@ -51,7 +52,7 @@ pipeline {
             }
         }
         
-        stage('Build & Push backend Image') {
+        stage('Build & Push llm Image') {
             steps {
                 withCredentials([file(credentialsId: 'openai-key', variable: 'SECRET_ENV')]) {
                     script {
@@ -65,25 +66,60 @@ pipeline {
             }
         }
 
-        stage('Update GitHub Deployment YAML') {
+        stage('Deploy to EC2 with Docker Compose') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'github_token', 
-                    usernameVariable: 'GIT_USERNAME', 
-                    passwordVariable: 'GIT_PASSWORD')]) {
-                    script {
-                        sh """
-                        git clone https://github.com/2-KTB-Tiling/k8s-manifests.git
-                        cd k8s-manifests
-                        sed -i 's|image: luckyprice1103/tiling-ai-server:.*|image: luckyprice1103/tiling-ai-server:${NEW_TAG}|' deployment.yaml
-                        git config --global user.email "luckyprice1103@naver.com"
-                        git config --global user.name "luckyPrice"
-                        git add deployment.yaml  
-                        git commit -m "Update ai image to ${NEW_TAG}"
-                        git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/2-KTB-Tiling/k8s-manifests.git main
-                        """
-                    }
+                script {
+                    def newTag = env.NEW_TAG  // ✅ NEW_TAG 값 가져오기
+
+                    sh """
+                    echo "🚀 배포 서버에 Docker Compose 적용 중..."
+                    echo "🔹 배포할 버전: ${newTag}"
+
+                    # 🔹 SSH 접속하여 Docker Compose 배포 실행
+                    ssh -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa ubuntu@${DEPLOY_SERVER} << EOF
+                    echo "✅ SSH 접속 완료!"
+
+                    # 🔹 버전 업데이트
+                    grep -q "^NEW_TAG_LLM=" /home/ubuntu/.env && \
+                        sudo sed -i "s/^NEW_TAG_LLM=.*/NEW_TAG_LLM=${newTag}/" /home/ubuntu/.env || \
+                        echo "NEW_TAG_LLM=${newTag}" | sudo tee -a /home/ubuntu/.env
+
+                    # 🔹 최신 이미지 Pull
+                    sudo docker pull luckyprice1103/tiling-ai-server:${newTag}
+
+                    # 🔹 기존 컨테이너 종료
+                    sudo docker-compose -f /home/ubuntu/docker-compose.yml down
+
+                    # 🔹 최신 버전으로 컨테이너 실행
+                    sudo docker-compose --env-file /home/ubuntu/.env -f /home/ubuntu/docker-compose.yml up -d
+                    echo "✅ Docker 백앤드 배포 완료!!"
+                    << EOF
+                    """
                 }
             }
-        }
+
+
+
+
+        // stage('Update GitHub Deployment YAML') {
+        //     steps {
+        //         withCredentials([usernamePassword(credentialsId: 'github_token', 
+        //             usernameVariable: 'GIT_USERNAME', 
+        //             passwordVariable: 'GIT_PASSWORD')]) {
+        //             script {
+        //                 sh """
+        //                 git clone https://github.com/2-KTB-Tiling/k8s-manifests.git
+        //                 cd k8s-manifests
+        //                 sed -i 's|image: luckyprice1103/tiling-ai-server:.*|image: luckyprice1103/tiling-ai-server:${NEW_TAG}|' deployment.yaml
+        //                 git config --global user.email "luckyprice1103@naver.com"
+        //                 git config --global user.name "luckyPrice"
+        //                 git add deployment.yaml  
+        //                 git commit -m "Update ai image to ${NEW_TAG}"
+        //                 git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/2-KTB-Tiling/k8s-manifests.git main
+        //                 """
+        //             }
+        //         }
+        //     }
+        // }
     }
 }
